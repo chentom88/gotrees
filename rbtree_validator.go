@@ -1,5 +1,7 @@
 package gotrees
-import "fmt"
+import (
+	"fmt"
+)
 
 type rbValidator struct {
 	blackNodeCount     int
@@ -14,10 +16,10 @@ func ValidateRBTree(tree *RBTree) error {
 		return nil
 	}
 
-	return ValidateRBTreeByRoot(tree.root)
+	return ValidateRBSubtree(tree.root)
 }
 
-func ValidateRBTreeByRoot(root *RBNode) error {
+func ValidateRBSubtree(root *RBNode) error {
 	if root == nil {
 		return nil
 	}
@@ -26,93 +28,92 @@ func ValidateRBTreeByRoot(root *RBNode) error {
 		blackNodeCount: -1,
 	}
 
-	validator.validateFromNode(root, 0)
-
-	if validator.blackNodeViolation {
-		return fmt.Errorf("Tree invalid because of differing black node counts of %d and %d",
-					validator.blackNodeCount, validator.violatingNodeCount)
-	}
-
-	if validator.redRedViolation {
-		return fmt.Errorf("Tree invalid because of red node with red child")
-	}
-
-	if validator.bstViolation {
-		return fmt.Errorf("Tree invalid because nodes of incorrect order were found")
-	}
-
-	return nil
+	return validator.validateFromNode(root, 0)
 }
 
 func (v* rbValidator) String() string {
 	return fmt.Sprintf("%d:%t:%t:%t", v.blackNodeCount, v.redRedViolation, v.blackNodeViolation, v.bstViolation)
 }
 
-func (v *rbValidator) validateFromNode(node *RBNode, count int) {
-	if v.blackNodeViolation || v.redRedViolation  || v.bstViolation {
-		return
-	}
-
+func (v *rbValidator) validateFromNode(node *RBNode, count int) error {
 	if node == nil {
-		v.checkBlackNodeCount(count + 1)
+		if err := v.checkBlackNodeCount(count + 1); err != nil {
+			return err
+		}
 
-		return
+		return nil
 	}
 
-	if v.checkForBSTViolation(node) {
-		return
+	if err := v.checkForBSTViolation(node); err != nil {
+		return err
 	}
-
 
 	if node.Color == RBColor_Red {
-		if v.checkForRedRedViolation(node) {
-			return
+		if err := v.checkForRedRedViolation(node); err != nil {
+			return err
 		}
 	} else {
 		count = count + 1
 	}
 
-	v.validateFromNode(node.LeftChild, count)
-	v.validateFromNode(node.RightChild, count)
+	if err := v.validateFromNode(node.LeftChild, count); err != nil {
+		return err
+	}
+
+	if err := v.validateFromNode(node.RightChild, count); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (v* rbValidator) checkBlackNodeCount(count int) {
+func (v* rbValidator) checkBlackNodeCount(count int) error {
 	if v.blackNodeCount < 0 {
 		v.blackNodeCount = count
 	} else if v.blackNodeCount != count {
-		v.violatingNodeCount = count
-		v.blackNodeViolation = true
+		return fmt.Errorf("Tree invalid because of differing black node counts of %d and %d",
+			v.blackNodeCount, count)
 	}
+
+	return nil
 }
 
-func (v* rbValidator) checkForBSTViolation(node *RBNode) bool {
+func (v* rbValidator) checkForBSTViolation(node *RBNode) error {
+	violation := false
+
 	if node.LeftChild != nil {
 		if node.Node.Key() < node.LeftChild.Node.Key() {
-			v.bstViolation = true
-			return true
+			violation = true
 		}
 	}
 
-	if node.RightChild != nil {
+	if !violation && node.RightChild != nil {
 		if node.Node.Key() > node.RightChild.Node.Key() {
-			v.bstViolation = true
-			return true
+			violation = true
 		}
 	}
 
-	return false
+	if violation {
+		return fmt.Errorf("Tree invalid because nodes of incorrect order were found")
+	}
+
+	return nil
 }
 
-func (v* rbValidator) checkForRedRedViolation(node *RBNode) bool {
+func (v* rbValidator) checkForRedRedViolation(node *RBNode) error {
+	violation := false
+
 	if node.LeftChild != nil && node.LeftChild.Color == RBColor_Red {
-		v.redRedViolation = true
-		return true
+		violation = true
 	}
 
-	if node.RightChild != nil && node.RightChild.Color == RBColor_Red {
-		v.redRedViolation = true
-		return true
+	if !violation && node.RightChild != nil && node.RightChild.Color == RBColor_Red {
+		violation = true
 	}
 
-	return false
+	if violation {
+		return fmt.Errorf("Tree invalid because of red node with red child")
+	}
+
+	return nil
 }

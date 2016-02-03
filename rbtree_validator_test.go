@@ -29,12 +29,12 @@ var _ = Describe("RBTreeValidator", func() {
 		})
 
 		It("returns that a nil root is valid", func() {
-			Expect(func() { validationResult = ValidateRBTreeByRoot(nil) }).ToNot(Panic())
+			Expect(func() { validationResult = ValidateRBSubtree(nil) }).ToNot(Panic())
 			Expect(validationResult).To(BeNil())
 		})
 
 		It("correctly identifies a valid tree", func() {
-			Expect(func() { validationResult = ValidateRBTreeByRoot(root) } ).ToNot(Panic())
+			Expect(func() { validationResult = ValidateRBSubtree(root) } ).ToNot(Panic())
 			Expect(validationResult).To(BeNil())
 		})
 	})
@@ -43,21 +43,21 @@ var _ = Describe("RBTreeValidator", func() {
 		It("correctly identifies a black node count violation", func() {
 			root.LeftChild.RightChild = nil
 
-			Expect(func() { validationResult = ValidateRBTreeByRoot(root) } ).ToNot(Panic())
+			Expect(func() { validationResult = ValidateRBSubtree(root) } ).ToNot(Panic())
 			Expect(validationResult).ToNot(BeNil())
 		})
 
 		It("correctly identifies a black node count violation", func() {
 			root.LeftChild.RightChild.Color = RBColor_Red
 
-			Expect(func() { validationResult = ValidateRBTreeByRoot(root) } ).ToNot(Panic())
+			Expect(func() { validationResult = ValidateRBSubtree(root) } ).ToNot(Panic())
 			Expect(validationResult).ToNot(BeNil())
 		})
 
 		It("correctly identifies a BST violation", func() {
 			root.LeftChild.LeftChild.Node = &IntegerNode{ value: 11 }
 
-			Expect(func() { validationResult = ValidateRBTreeByRoot(root) } ).ToNot(Panic())
+			Expect(func() { validationResult = ValidateRBSubtree(root) } ).ToNot(Panic())
 			Expect(validationResult).ToNot(BeNil())
 		})
 	})
