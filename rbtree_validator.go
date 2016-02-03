@@ -5,10 +5,6 @@ import (
 
 type rbValidator struct {
 	blackNodeCount     int
-	violatingNodeCount int
-	redRedViolation    bool
-	blackNodeViolation bool
-	bstViolation       bool
 }
 
 func ValidateRBTree(tree *RBTree) error {
@@ -29,10 +25,6 @@ func ValidateRBSubtree(root *RBNode) error {
 	}
 
 	return validator.validateFromNode(root, 0)
-}
-
-func (v* rbValidator) String() string {
-	return fmt.Sprintf("%d:%t:%t:%t", v.blackNodeCount, v.redRedViolation, v.blackNodeViolation, v.bstViolation)
 }
 
 func (v *rbValidator) validateFromNode(node *RBNode, count int) error {
