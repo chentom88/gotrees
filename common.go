@@ -14,4 +14,6 @@ const (
 	RBChildType_Root  RBChildType = 0
 	RBChildType_Left  RBChildType = 1
 	RBChildType_Right RBChildType = 2
+
+	Blah = 0
 )
